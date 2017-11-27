@@ -1,34 +1,32 @@
+import datetime as dt
 import os
 import random
 
-import boto3
-import datetime as dt
-
 from capture_images import takes_photos_in_web_cam
-from delete_files_from_s3 import delete_files_in_bucket
-from index_images import index_images_in_bucket
+from index_images import index_images
 from upload_files_to_s3 import upload_files_to_s3_bucket
-
-BUCKET_NAME = 'aiclub-testcollection1-bucket1'
-COLLECTION_ID = 'testcollection1'
-REGION="eu-west-1"
-session = boto3.session.Session(profile_name='AIClub-AdminUser')
-rekognition = session.client("rekognition", REGION)
+from aws_config import *
 
 
-def upload_face_to_rekognition_collection(list_of_image_filename):
-    remote_image_filenames = get_images_basenames(list_of_image_filename)
-    remote_folder = str(dt.date.today()) + str(random.randint(0, 10000))
+def upload_face_to_rekognition_collection(list_of_image_filename, bucket_name):
+    if isinstance(list_of_image_filename, list) and len(list_of_image_filename) > 0:
+        remote_image_filenames = get_images_basenames(list_of_image_filename)
+        remote_folder = str(dt.date.today()) + str(random.randint(0, 10000))
 
-    upload_files_to_s3_bucket(BUCKET_NAME, list_of_image_filename, remote_image_filenames, remote_folder)
+        list_of_uploaded_files = \
+            upload_files_to_s3_bucket(bucket_name, list_of_image_filename, remote_image_filenames, remote_folder)
 
-    index_images_in_bucket(BUCKET_NAME, COLLECTION_ID, remote_folder)
+        return index_images(list_of_uploaded_files, bucket_name, COLLECTION_ID)
 
 
-def upload_face_to_rekognition_collection_from_cam(image_name_prefix=""):
+def upload_face_to_rekognition_collection_from_cam(bucket_name, image_name_prefix=""):
     captured_image_filenames = takes_photos_in_web_cam(image_name_prefix)
-    upload_face_to_rekognition_collection(captured_image_filenames)
+    return upload_face_to_rekognition_collection(captured_image_filenames, bucket_name)
 
 
 def get_images_basenames(original_filenames_list):
     return [os.path.basename(filename) for filename in original_filenames_list]
+
+
+if __name__ == "__main__":
+    print upload_face_to_rekognition_collection_from_cam(BUCKET_NAME, "Deividas-")

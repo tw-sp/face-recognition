@@ -1,15 +1,7 @@
-import boto3
 import os
-
+from aws_config import *
 from capture_images import takes_photos_in_web_cam
-from delete_files_from_s3 import delete_files_in_bucket
 from upload_files_to_s3 import upload_file_to_s3_bucket
-
-BUCKET_NAME = 'aiclub-testcollection1-bucket1'
-COLLECTION_ID = 'testcollection1'
-REGION="eu-west-1"
-session = boto3.session.Session(profile_name='AIClub-AdminUser')
-rekognition = session.client("rekognition", REGION)
 
 
 def predict_identity_from_web_cam(bucket, collection_id, threshold=80, max_results=2):
@@ -25,7 +17,7 @@ def predict_identity_from_web_cam(bucket, collection_id, threshold=80, max_resul
 
 
 def predict_identity_by_image(bucket, s3_key, collection_id, threshold=80, max_results=2):
-    response = rekognition.search_faces_by_image(
+    response = rekognition_client.search_faces_by_image(
         Image={
             "S3Object": {
                 "Bucket": bucket,

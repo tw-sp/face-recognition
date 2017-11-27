@@ -1,6 +1,6 @@
+import datetime
+import os
 import cv2
-import datetime, os
-import random
 
 
 def takes_photos_in_web_cam(image_name_prefix):
